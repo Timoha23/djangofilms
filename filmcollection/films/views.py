@@ -99,8 +99,8 @@ def favorite_films(request):
 @login_required
 def deferred_films(request):
     films = (Film.objects.
-             filter(favorite__user=request.user).
-             order_by('-favorite__pub_date'))
+             filter(deferred__user=request.user).
+             order_by('-deferred__pub_date'))
     films_list = []
     films_watched = (Film.objects.filter(watched_film__user=request.user))
     films_favorites = (Film.objects.filter(favorite__user=request.user))
@@ -148,10 +148,26 @@ def search(request):
     return render(request, template_name='films/search_result.html', context=context)
 
 
+@login_required
 def film_page(request, film_id):
     film = get_film_from_id(film_id)
+    if Film.objects.filter(film_id=film_id).exists() is False:
+        context = {
+            'film': film,
+            'favorite': False,
+            'watched': False,
+            'deferred': False,
+        }
+        return render(request, template_name='films/film.html', context=context)
+    film_obj = Film.objects.get(film_id=film_id)
+    film_watched = WatchedFilm.objects.filter(film=film_obj, user=request.user).exists()
+    film_favorite = Favorite.objects.filter(film=film_obj, user=request.user).exists()
+    film_deferred = Deferred.objects.filter(film=film_obj).exists()
     context = {
         'film': film,
+        'favorite': film_favorite,
+        'watched': film_watched,
+        'deferred': film_deferred,
     }
     return render(request, template_name='films/film.html', context=context)
 
@@ -202,7 +218,7 @@ def delete_film_from_watched(request, film_id):
         film=film_obj,
         user=request.user
     ).delete()
-    return redirect(to='films:favorite_films')
+    return redirect(to='films:watched_films')
 
 
 @login_required
