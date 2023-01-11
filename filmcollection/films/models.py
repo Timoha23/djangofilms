@@ -17,8 +17,20 @@ class Film(models.Model):
     image = models.CharField(max_length=1024, null=True)
 
 
-class UserRating(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    film = models.ForeignKey(Film, on_delete=models.CASCADE)
+class WatchedFilm(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='watched_film')
+    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='watched_film')
     rating = models.SmallIntegerField()
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorite')
+    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='favorite')
+    pub_date = models.DateTimeField(auto_now_add=True)
+
+
+class Deferred(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='deferred')
+    film = models.ForeignKey(Film, on_delete=models.CASCADE, related_name='deferred')
     pub_date = models.DateTimeField(auto_now_add=True)
