@@ -1,0 +1,51 @@
+<div class="card mb-3" style="max-width: 65%;">
+    <div class="row no-gutters">
+      <div class="col-md-4">
+        <img src="{{ film.image }}" class="card-img" alt="...">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">
+            {% if film.name_ru is None %}
+              {{ film.name_en }}
+            {% else %}
+              {{ film.name_ru }}
+            {% endif %}
+          </h5>
+          <p class="card-text">Описание: {{ film.description }}</p>
+          <p class="card-text">Год: {{ film.year }}</p>
+          <p class="card-text">Длительность фильма: {{ film.film_lenght }}</p>
+          <p class="card-text">Рейтинг фильма: {{ film.rating }}</p>
+          <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+          {% if request.resolver_match.view_name == 'films:search' %}
+            <a
+            class="btn btn-outline-secondary"
+            href="{% url 'films:watched_film' film.film_id %}" role="button"
+            >
+              Отписаться
+            </a>
+          {% elif request.resolver_match.view_name == 'films:watched_film' %}
+          
+          <div class="rating-area">
+            <input type="radio" id="star-5" name="rating" value="5">
+            <label for="star-5" title="Оценка «5»"></label>	
+            <input type="radio" id="star-4" name="rating" value="4">
+            <label for="star-4" title="Оценка «4»"></label>    
+            <input type="radio" id="star-3" name="rating" value="3">
+            <label for="star-3" title="Оценка «3»"></label>  
+            <input type="radio" id="star-2" name="rating" value="2">
+            <label for="star-2" title="Оценка «2»"></label>    
+            <input type="radio" id="star-1" name="rating" value="1">
+            <label for="star-1" title="Оценка «1»"></label>
+          </div>
+            <a
+            class="btn btn-outline-secondary"
+            href="" role="button"
+            >
+              Добавить
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+</div>

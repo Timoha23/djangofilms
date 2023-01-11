@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block title %} Страница результата поиска {% endblock title %}
+{% block header %} Результат поиска: {{ query }} {% endblock header %}
+{% block content %}
+    {% for film in films %}
+        {% include 'includes/card.html' %}
+        {% if not forloop.last %}<hr style="max-width: 65%;">{% endif %}
+    {% endfor %}
+{% endblock content %}
