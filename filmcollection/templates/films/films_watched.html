@@ -2,4 +2,8 @@
 {% block title %} Список просмотренных фильмов {% endblock title %}
 {% block header %} Это страница просмотренных фильмов проекта {% endblock header %}
 {% block content %}
+{% for film in films %}
+        {% include 'includes/card.html' %}
+        {% if not forloop.last %}<hr style="width:65%; margin: 10px auto;" />{% endif %}
+    {% endfor %}
 {% endblock content %}
