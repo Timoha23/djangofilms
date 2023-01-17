@@ -143,3 +143,6 @@ LOGIN_REDIRECT_URL = 'films:index'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

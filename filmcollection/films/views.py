@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from api.kinopoisk.api_kinopisk import get_films, get_film_from_id
-from .models import Film, WatchedFilm, Favorite, Deferred
+from api.kinopoisk.api_kinopisk import get_films, get_film_from_id, recommended_films
+from .models import Film, WatchedFilm, Favorite, Deferred, User
 
 
 def paginator(queryset, request):
@@ -135,9 +135,9 @@ def film_page(request, film_id):
         film.update({'user_rating': range(rating.rating)})
     context = {
         'film': film,
-        'favorite': film_obj.favorite.exists(),
-        'watched': film_obj.watched_film.exists(),
-        'deferred': film_obj.deferred.exists(),
+        'favorite': film_obj.favorite.filter(user=request.user).exists(),
+        'watched': film_obj.watched_film.filter(user=request.user).exists(),
+        'deferred': film_obj.deferred.filter(user=request.user).exists(),
     }
     return render(request, template_name='films/film.html', context=context)
 
@@ -210,5 +210,14 @@ def delete_film_from_deferred(request, film_id):
 
 
 def get_recommended_films(request):
-    user = request.user
-    
+    random_favorite_films = Favorite.objects.select_related('film').filter(user=request.user).order_by('?')
+    user_watched_films = Film.objects.filter(watched_film__user=request.user)
+    user_favorite_films = Film.objects.filter(favorite__user=request.user)
+    film_list = []
+    for film in random_favorite_films:
+        film_list.append(film.film.film_id)
+        if len(film_list) == 5:
+            break
+    recommended = recommended_films(film_list)
+    print(recommended)
+    return render(request, template_name='films/recommended_films.html')
