@@ -1,9 +1,12 @@
 {% extends 'base.html' %}
 {% block title %} Страница результата поиска {% endblock title %}
-{% block header %} Результат поиска: {{ query }} {% endblock header %}
+{% block header %} Результат поиска: {% endblock header %}
 {% block content %}
-    {% for film in films %}
+  <div class="container py-5">
+    {% for film in page_obj %}
         {% include 'includes/card.html' %}
         {% if not forloop.last %}<hr style="width:65%; margin: 10px auto;" />{% endif %}
     {% endfor %}
+    {% include 'includes/paginator.html' %}
+  </div>
 {% endblock content %}

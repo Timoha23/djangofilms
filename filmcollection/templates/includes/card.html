@@ -6,11 +6,13 @@
     <div class="col-md-8">
       <div class="card-body">
         <h5 class="card-title">
-          {% if film.name_ru is None and film.name_en is None %} 
-          {{ film.name_original }} 
-          {% elif film.name_ru is None %} 
-          {{ film.name_en }}
-          {% else %} {{ film.name_ru }} {% endif %}
+          <a href="{% url 'films:film' film.film_id %}">
+            {% if film.name_ru is None and film.name_en is None %} 
+            {{ film.name_original }} 
+            {% elif film.name_ru is None %} 
+            {{ film.name_en }}
+            {% else %} {{ film.name_ru }} {% endif %}
+          </a>
         </h5>
         <p class="card-text">Описание: {{ film.description }}</p>
         <p class="card-text">Год: {{ film.year }}</p>
@@ -27,8 +29,7 @@
           >
             Страница фильма
           </a>
-        {% endif %}
-        {% if request.resolver_match.view_name != 'films:search' %}
+        {% else %}
           {% if film.favorite is True or favorite is True %}
             <a
               class="btn btn-outline-warning"
@@ -45,26 +46,6 @@
             >
               В избранное
             </a>
-          {% endif %}
-          {% if request.resolver_match.view_name == 'films:film' %}
-          {% else %}
-            {% if film.watched is True or watched is True %}
-              <a
-                class="btn btn-outline-success"
-                href="{% url 'films:delete_watched_film' film.film_id %}"
-                role="button"
-              >
-                В просмотренном
-              </a>
-            {% else %}
-              {% comment %} <a
-                class="btn btn-success"
-                href="{% url 'films:watched_film' film.film_id %}"
-                role="button"
-              >
-                В просмотренное
-              </a> {% endcomment %}
-            {% endif %}
           {% endif %}
           {% if film.deferred is True or deferred is True %}
             <a
@@ -83,9 +64,21 @@
               Смотреть позже
             </a>
           {% endif %}
-        {% endif %}
-        {% if request.resolver_match.view_name != 'films:watched_films' and request.resolver_match.view_name != 'films:search' and film.watched is not True %}
-            {% if watched is not True%}
+          {% if film.watched is True or watched is True %}
+              <a
+                class="btn btn-outline-success"
+                href="{% url 'films:delete_watched_film' film.film_id %}"
+                role="button"
+              >
+                В просмотренном
+              </a>
+              <div class="rating-result">
+                  <p>Ваш рейтинг фильма</p>
+                {% for _ in film.user_rating %}
+                  <span class="active"></span>
+                {% endfor %}
+              </div>
+          {% else %}
             <form
               method="post"
               action="{% url 'films:watched_film' film.film_id %}"
@@ -407,20 +400,13 @@
               <button
                 type="submit"
                 class="btn btn-success"
-                style="width: 65%; margin: 10px auto"
+                style="width: 100%; margin: 10px auto;"
               >
                 Добавить
               </button>
             </form>
-          {% endif %}  
-        {% elif request.resolver_match.view_name == 'films:watched_films' %}
-        <div class="rating-result">
-          <p>Ваш рейтинг фильма</p>
-          {% for _ in film.user_rating %}
-          <span class="active"></span>
-          {% endfor %}
-        </div>
-        {% endif %}
+          {% endif %}
+        {% endif%}
       </div>
     </div>
   </div>

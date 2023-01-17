@@ -1,7 +1,78 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from api.kinopoisk.api_kinopisk import get_films, get_film_from_id
-from .models import Film, WatchedFilm, User, Favorite, Deferred
+from .models import Film, WatchedFilm, Favorite, Deferred
+
+
+def paginator(queryset, request):
+    paginator = Paginator(queryset, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return {'page_obj': page_obj}
+
+
+def get_films_data(request, films):
+    films_list = []
+    films_watched = (Film.objects.filter(watched_film__user=request.user))
+    films_favorites = (Film.objects.filter(favorite__user=request.user))
+    films_deferreds = (Film.objects.filter(deferred__user=request.user))
+    for res in films:
+        if res in films_favorites:
+            favorite = True
+        else:
+            favorite = False
+        if res in films_watched:
+            watched = True
+        else:
+            watched = False
+        if res in films_deferreds:
+            deferred = True
+        else:
+            deferred = False
+        film = {}
+        film = {
+            'film_id': res.film_id,
+            'name_ru': res.name_ru,
+            'name_en': res.name_en,
+            'year': res.year,
+            'description': res.description,
+            'film_length': res.film_length,
+            # 'genres': res.genres,
+            # 'user_rating': range(res.watched_film.get(film=res).rating),
+            'name_original': res.name_original,
+            'rating': res.rating,
+            'image': res.image,
+            'favorite': favorite,
+            'watched': watched,
+            'deferred': deferred,
+        }
+        rating = res.watched_film.filter(film=res)
+        if rating.exists():
+            rating = rating[0]
+            film.update({'user_rating': range(rating.rating)})
+        films_list.append(film)
+    context = dict()
+    context.update(paginator(films_list, request))
+    return context
+
+
+def get_film_obj(film_id):
+    film = get_film_from_id(film_id)
+    if Film.objects.filter(film_id=film_id).exists() is False:
+        Film.objects.create(
+            film_id=film_id,
+            name_ru=film.get('name_ru'),
+            name_en=film.get('name_en'),
+            name_original=film.get('name_original'),
+            year=film.get('year'),
+            description=film.get('description'),
+            film_length=film.get('film_length'),
+            rating=film.get('rating'),
+            image=film.get('image')
+        )
+    film_obj = Film.objects.get(film_id=film_id)
+    return film_obj
 
 
 def index(request):
@@ -13,46 +84,7 @@ def watched_films(request):
     films = (Film.objects.
              filter(watched_film__user=request.user).
              order_by('-watched_film__pub_date'))
-    # films_rating = (Film.objects.
-    #                 filter(watched_film__user=request.user).
-    #                 order_by('-watched_film__pub_date').
-    #                 values('watched_film__rating'))
-    films_favorites = (Film.objects.filter(favorite__user=request.user))
-    films_deferreds = (Film.objects.filter(deferred__user=request.user))
-    films_list = []
-    # index = 0
-    for res in films:
-        if res in films_deferreds:
-            deferred = True
-        else:
-            deferred = False
-        if res in films_favorites:
-            favorite = True
-        else:
-            favorite = False
-        film = {}
-        # rating = films_rating[index]
-        film = {
-            'film_id': res.film_id,
-            'name_ru': res.name_ru,
-            'name_en': res.name_en,
-            'year': res.year,
-            'description': res.description,
-            'film_length': res.film_length,
-            # 'genres': res.genres,
-            'name_original': res.name_original,
-            'rating': res.rating,
-            'image': res.image,
-            'user_rating': range(res.watched_film.get(film=res).rating),
-            'watched': True,
-            'favorite': favorite,
-            'deferred': deferred,
-        }
-        # index += 1
-        films_list.append(film)
-    context = {
-        'films': films_list,
-    }
+    context = get_films_data(request, films)
     return render(request, template_name='films/films_watched.html', context=context)
 
 
@@ -61,38 +93,7 @@ def favorite_films(request):
     films = (Film.objects.
              filter(favorite__user=request.user).
              order_by('-favorite__pub_date'))
-    films_list = []
-    films_watched = (Film.objects.filter(watched_film__user=request.user))
-    films_deferreds = (Film.objects.filter(deferred__user=request.user))
-    for res in films:
-        if res in films_deferreds:
-            deferred = True
-        else:
-            deferred = False
-        if res in films_watched:
-            watched = True
-        else:
-            watched = False
-        film = {}
-        film = {
-            'film_id': res.film_id,
-            'name_ru': res.name_ru,
-            'name_en': res.name_en,
-            'year': res.year,
-            'description': res.description,
-            'film_length': res.film_length,
-            # 'genres': res.genres,
-            'name_original': res.name_original,
-            'rating': res.rating,
-            'image': res.image,
-            'deferred': deferred,
-            'favorite': True,
-            'watched': watched,
-        }
-        films_list.append(film)
-    context = {
-        'films': films_list,
-    }
+    context = get_films_data(request, films)
     return render(request, template_name='films/films_favorites.html', context=context)
 
 
@@ -101,38 +102,7 @@ def deferred_films(request):
     films = (Film.objects.
              filter(deferred__user=request.user).
              order_by('-deferred__pub_date'))
-    films_list = []
-    films_watched = (Film.objects.filter(watched_film__user=request.user))
-    films_favorites = (Film.objects.filter(favorite__user=request.user))
-    for res in films:
-        if res in films_favorites:
-            favorite = True
-        else:
-            favorite = False
-        if res in films_watched:
-            watched = True
-        else:
-            watched = False
-        film = {}
-        film = {
-            'film_id': res.film_id,
-            'name_ru': res.name_ru,
-            'name_en': res.name_en,
-            'year': res.year,
-            'description': res.description,
-            'film_length': res.film_length,
-            # 'genres': res.genres,
-            'name_original': res.name_original,
-            'rating': res.rating,
-            'image': res.image,
-            'favorite': favorite,
-            'watched': watched,
-            'deferred': True,
-        }
-        films_list.append(film)
-    context = {
-        'films': films_list,
-    }
+    context = get_films_data(request, films)
     return render(request, template_name='films/deferred_films.html', context=context)
 
 
@@ -141,10 +111,9 @@ def search(request):
     if query == '':
         return redirect(to='films:index')
     result = get_films(query)
-    context = {
-        'films': result,
-        'query': query,
-    }
+    page_obj = paginator(result, request)
+    context = dict()
+    context.update(page_obj)
     return render(request, template_name='films/search_result.html', context=context)
 
 
@@ -159,155 +128,87 @@ def film_page(request, film_id):
             'deferred': False,
         }
         return render(request, template_name='films/film.html', context=context)
-    film_obj = Film.objects.get(film_id=film_id)
-    film_watched = WatchedFilm.objects.filter(film=film_obj, user=request.user).exists()
-    film_favorite = Favorite.objects.filter(film=film_obj, user=request.user).exists()
-    film_deferred = Deferred.objects.filter(film=film_obj).exists()
+    film_obj = Film.objects.prefetch_related('watched_film', 'favorite', 'deferred').get(film_id=film_id)
+    rating = WatchedFilm.objects.filter(film=film_obj, user=request.user)
+    if rating.exists():
+        rating = rating[0]
+        film.update({'user_rating': range(rating.rating)})
     context = {
         'film': film,
-        'favorite': film_favorite,
-        'watched': film_watched,
-        'deferred': film_deferred,
+        'favorite': film_obj.favorite.exists(),
+        'watched': film_obj.watched_film.exists(),
+        'deferred': film_obj.deferred.exists(),
     }
     return render(request, template_name='films/film.html', context=context)
 
 
 @login_required
 def add_film_to_watched(request, film_id):
+    redirect_page = request.META.get('HTTP_REFERER')
     if request.POST.get('rating') is None:
         return redirect(to='films:index')
-    film = get_film_from_id(film_id)
     user_rating = int(request.POST['rating'])
-    if Film.objects.filter(film_id=film_id).exists() is False:
-        Film.objects.create(
-            film_id=film_id,
-            name_ru=film.get('name_ru'),
-            name_en=film.get('name_en'),
-            name_original=film.get('name_original'),
-            year=film.get('year'),
-            description=film.get('description'),
-            film_length=film.get('film_length'),
-            rating=film.get('rating'),
-            image=film.get('image')
-        )
-    film_obj = Film.objects.get(film_id=film_id)
+    film_obj = get_film_obj(film_id)
     if WatchedFilm.objects.filter(user=request.user, film=film_obj):
         WatchedFilm.objects.update(rating=user_rating)
     else:
         WatchedFilm.objects.create(user=request.user, film=film_obj, rating=user_rating)
-    return redirect(to='films:watched_films')
+    return redirect(redirect_page)
 
 
 @login_required
 def delete_film_from_watched(request, film_id):
-    # film = get_film_from_id(film_id)
-    # if Film.objects.filter(film_id=film_id).exists() is False:
-    #     Film.objects.create(
-    #         film_id=film_id,
-    #         name_ru=film.get('name_ru'),
-    #         name_en=film.get('name_en'),
-    #         name_original=film.get('name_original'),
-    #         year=film.get('year'),
-    #         description=film.get('description'),
-    #         film_length=film.get('film_length'),
-    #         rating=film.get('rating'),
-    #         image=film.get('image')
-    #     )
+    redirect_page = request.META.get('HTTP_REFERER')
     film_obj = Film.objects.get(film_id=film_id)
     WatchedFilm.objects.filter(
         film=film_obj,
         user=request.user
     ).delete()
-    return redirect(to='films:watched_films')
+    return redirect(redirect_page)
 
 
 @login_required
 def add_film_to_favorite(request, film_id):
-    film = get_film_from_id(film_id)
-    if Film.objects.filter(film_id=film_id).exists() is False:
-        Film.objects.create(
-            film_id=film_id,
-            name_ru=film.get('name_ru'),
-            name_en=film.get('name_en'),
-            name_original=film.get('name_original'),
-            year=film.get('year'),
-            description=film.get('description'),
-            film_length=film.get('film_length'),
-            rating=film.get('rating'),
-            image=film.get('image')
-        )
-    film_obj = Film.objects.get(film_id=film_id)
+    redirect_page = request.META.get('HTTP_REFERER')
     Favorite.objects.create(
-        film=film_obj,
+        film=get_film_obj(film_id),
         user=request.user,
     )
-    return redirect(to='films:favorite_films')
+    return redirect(redirect_page)
 
 
 @login_required
 def delete_film_from_favorite(request, film_id):
-    # film = get_film_from_id(film_id)
-    # if Film.objects.filter(film_id=film_id).exists() is False:
-    #     Film.objects.create(
-    #         film_id=film_id,
-    #         name_ru=film.get('name_ru'),
-    #         name_en=film.get('name_en'),
-    #         name_original=film.get('name_original'),
-    #         year=film.get('year'),
-    #         description=film.get('description'),
-    #         film_length=film.get('film_length'),
-    #         rating=film.get('rating'),
-    #         image=film.get('image')
-    #     )
+    redirect_page = request.META.get('HTTP_REFERER')
     film_obj = Film.objects.get(film_id=film_id)
     Favorite.objects.filter(
         film=film_obj,
         user=request.user
     ).delete()
-    return redirect(to='films:favorite_films')
+    return redirect(redirect_page)
 
 
 @login_required
 def add_film_to_deferred(request, film_id):
-    film = get_film_from_id(film_id)
-    if Film.objects.filter(film_id=film_id).exists() is False:
-        Film.objects.create(
-            film_id=film_id,
-            name_ru=film.get('name_ru'),
-            name_en=film.get('name_en'),
-            name_original=film.get('name_original'),
-            year=film.get('year'),
-            description=film.get('description'),
-            film_length=film.get('film_length'),
-            rating=film.get('rating'),
-            image=film.get('image')
-        )
-    film_obj = Film.objects.get(film_id=film_id)
+    redirect_page = request.META.get('HTTP_REFERER')
     Deferred.objects.create(
-        film=film_obj,
+        film=get_film_obj(film_id),
         user=request.user,
     )
-    return redirect(to='films:deferred_films')
+    return redirect(redirect_page)
 
 
 @login_required
 def delete_film_from_deferred(request, film_id):
-    # film = get_film_from_id(film_id)
-    # if Film.objects.filter(film_id=film_id).exists() is False:
-    #     Film.objects.create(
-    #         film_id=film_id,
-    #         name_ru=film.get('name_ru'),
-    #         name_en=film.get('name_en'),
-    #         name_original=film.get('name_original'),
-    #         year=film.get('year'),
-    #         description=film.get('description'),
-    #         film_length=film.get('film_length'),
-    #         rating=film.get('rating'),
-    #         image=film.get('image')
-    #     )
+    redirect_page = request.META.get('HTTP_REFERER')
     film_obj = Film.objects.get(film_id=film_id)
     Deferred.objects.filter(
         film=film_obj,
         user=request.user
     ).delete()
-    return redirect(to='films:deferred_films')
+    return redirect(redirect_page)
+
+
+def get_recommended_films(request):
+    user = request.user
+    

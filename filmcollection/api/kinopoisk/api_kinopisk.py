@@ -1,6 +1,8 @@
 from kinopoisk_unofficial.kinopoisk_api_client import KinopoiskApiClient
 from kinopoisk_unofficial.request.films.film_request import FilmRequest
 from kinopoisk_unofficial.request.films.search_by_keyword_request import SearchByKeywordRequest
+from kinopoisk_unofficial.request.films.related_film_request import RelatedFilmRequest
+
 
 def get_films(film_name):
     api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
@@ -43,3 +45,22 @@ def get_film_from_id(film_id):
             'image': result.poster_url_preview,
         }
     return film
+
+
+def get_recommended_films(film_id):
+    api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
+    request = RelatedFilmRequest(507)
+    response = api_client.films.send_related_film_request(request)
+    films = response.items
+    films_list = []
+    for res in films:
+        film = {}
+        film = {
+            'film_id': res.film_id,
+            'name_ru': res.name_ru,
+            'name_en': res.name_en,
+            'name_original': res.name_original,
+            'image': res.poster_url_preview,
+        }
+        films_list.append(film)
+    return films_list

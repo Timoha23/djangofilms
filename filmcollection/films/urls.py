@@ -17,5 +17,6 @@ urlpatterns = [
     path('del_film_from_favorite/<int:film_id>/', views.delete_film_from_favorite, name='delete_favorite'),
     path('add_film_to_deferred/<int:film_id>/', views.add_film_to_deferred, name='add_deferred'),
     path('del_film_from_deferred/<int:film_id>/', views.delete_film_from_deferred, name='delete_deferred'),
+    path('recommendation/', views.get_recommended_films, name='get_recommended'),
     path('', views.index, name='index'),
 ]
