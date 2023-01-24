@@ -30,6 +30,10 @@
                            class="nav-link px-2 {% if view_name == 'films:deferred_films' %}text-secondary{% else %}text-white{% endif %}">Смотреть позже</a>
                     </li>
                     <li>
+                        <a href="{% url 'films:get_recommended' %}"
+                           class="nav-link px-2 {% if view_name == 'films:get_recommended' %}text-secondary{% else %}text-white{% endif %}">Рекомендуем вам</a>
+                    </li>
+                    <li>
                         <a href="#" class="nav-link px-2 text-white">О нас</a>
                     </li>
                 </ul>

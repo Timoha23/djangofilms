@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
 {% block title %} Список рекомендуемых фильмов {% endblock title %}
-{% block header %} Это страница рекомендуемых фильмов проекта {% endblock header %}
 {% block content %}
   <div class="container py-5">
-    {% comment %} {% for film in page_obj %}
+    {% for film in page_obj %}
         {% include 'includes/card.html' %}
         {% if not forloop.last %}<hr style="width:65%; margin: 10px auto;" />{% endif %}
     {% endfor %}
-    {% include 'includes/paginator.html' %} {% endcomment %}
-  <div class="container py-5">
+    {% include 'includes/paginator.html' %}
+  </div>
 {% endblock content %}

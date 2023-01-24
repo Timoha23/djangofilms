@@ -5,30 +5,34 @@ from kinopoisk_unofficial.request.films.related_film_request import RelatedFilmR
 import random
 
 
-def get_films(film_name):
+def get_films(film_name: str) -> list[dict]:
+    """Получает название фильма на основе чего генерирует список из
+    словарей, в которых хранится информация касательно фильмов"""
+
     api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
     request = SearchByKeywordRequest(film_name)
     response = api_client.films.send_search_by_keyword_request(request)
     films = response.films
     films_list = []
-    for res in films:
-        film = {}
-        film = {
-            'film_id': res.film_id,
-            'name_ru': res.name_ru,
-            'name_en': res.name_en,
-            'year': res.year,
-            'description': res.description,
-            'film_length': res.film_length,
+    for film in films:
+        film_info = {}
+        film_info = {
+            'film_id': film.film_id,
+            'name_ru': film.name_ru,
+            'name_en': film.name_en,
+            'year': film.year,
+            'description': film.description,
+            'film_length': film.film_length,
             # 'genres': res.genres,
-            'rating': res.rating,
-            'image': res.poster_url_preview,
+            'rating': film.rating,
+            'image': film.poster_url_preview,
         }
-        films_list.append(film)
+        films_list.append(film_info)
     return films_list
 
 
-def get_film_from_id(film_id):
+def get_film_from_id(film_id: int) -> dict:
+    """Получает фильм ID на основе чего генерирует информацию об этом фильме"""
     api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
     request = FilmRequest(film_id)
     response = api_client.films.send_film_frame_request(request)
@@ -48,9 +52,11 @@ def get_film_from_id(film_id):
     return film
 
 
-def recommended_films(film_list):
+def recommended_films(films_id: list) -> list:
+    """Получает список ID фильмов на основе чего совершает подборку
+    рекомендуемых фильмов"""
     films_list = []
-    for film in film_list:
+    for film in films_id:
         api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
         request = RelatedFilmRequest(film)
         response = api_client.films.send_related_film_request(request)
@@ -65,6 +71,5 @@ def recommended_films(film_list):
                 'image': res.poster_url_preview,
             }
             films_list.append(film)
-    lenght_list = 10 if len(films_list) > 10 else len(films_list)
-    result_films_list = random.sample(films_list, lenght_list)
+    result_films_list = random.sample(films_list, len(films_list))
     return result_films_list

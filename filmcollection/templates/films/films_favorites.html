@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% block title %} Список избранных фильмов {% endblock title %}
-{% block header %} Это страница избранных фильмов проекта {% endblock header %}
 {% block content %}
   <div class="container py-5">
     {% for film in page_obj %}
@@ -8,5 +7,5 @@
         {% if not forloop.last %}<hr style="width:65%; margin: 10px auto;" />{% endif %}
     {% endfor %}
     {% include 'includes/paginator.html' %}
-  <div class="container py-5">
+  </div>
 {% endblock content %}

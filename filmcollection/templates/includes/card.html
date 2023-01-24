@@ -1,26 +1,81 @@
-<div class="card mb-3 mx-auto" style="max-width: 65%">
+<div class="card mb-3 mx-auto" style="max-width: 65%;">
   <div class="row no-gutters">
     <div class="col-md-4">
-      <img src="{{ film.image }}" class="card-img" alt="..." />
+      <img src="{{ film.image }}" class="card-img" style="margin: 10px" alt="..." />
     </div>
     <div class="col-md-8">
       <div class="card-body">
-        <h5 class="card-title">
-          <a href="{% url 'films:film' film.film_id %}">
-            {% if film.name_ru is None and film.name_en is None %} 
-            {{ film.name_original }} 
-            {% elif film.name_ru is None %} 
-            {{ film.name_en }}
-            {% else %} {{ film.name_ru }} {% endif %}
-          </a>
-        </h5>
-        <p class="card-text">Описание: {{ film.description }}</p>
-        <p class="card-text">Год: {{ film.year }}</p>
-        <p class="card-text">Длительность фильма: {{ film.film_length }}</p>
-        <p class="card-text">Рейтинг фильма: {{ film.rating }}</p>
-        <p class="card-text">
-          <small class="text-muted">Last updated 3 mins ago</small>
-        </p>
+        <div class="container">
+          <div class="row">
+            <div class="col">
+              <h2 class="card-title">
+                <a href="{% url 'films:film' film.film_id %}" style="text-decoration: none; color: black">
+                  {% if film.name_ru is None and film.name_en is None %} 
+                  {{ film.name_original }} 
+                  {% elif film.name_ru is None %} 
+                  {{ film.name_en }}
+                  {% else %} {{ film.name_ru }} {% endif %}
+                </a>
+              </h2>
+            </div>
+            {% if request.resolver_match.view_name != 'films:search' %}
+                <div class="col d-flex justify-content-end">
+                  <div>
+                    <a role="button" title="Избранное" {% if film.favorite is True or favorite is True %} class="btn btn-warning btn-circle"  href="{% url 'films:delete_favorite' film.film_id %}" 
+                                          {% else %} class="btn btn-outline-warning btn-circle" href="{% url 'films:add_favorite' film.film_id %}"{% endif %}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-star" viewBox="0 0 16 16">
+                        <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.565.565 0 0 0-.163-.505L1.71 6.745l4.052-.576a.525.525 0 0 0 .393-.288L8 2.223l1.847 3.658a.525.525 0 0 0 .393.288l4.052.575-2.906 2.77a.565.565 0 0 0-.163.506l.694 3.957-3.686-1.894a.503.503 0 0 0-.461 0z"></path>
+                      </svg>
+                    </a>
+                  </div>
+                  <div>
+                    <a role="button" title="Смотреть позже" {% if film.deferred is True or deferred is True %} class="btn btn-success btn-circle" href="{% url 'films:delete_deferred' film.film_id %}"
+                                                                 {% else %} class="btn btn-outline-success btn-circle" href="{% url 'films:add_deferred' film.film_id %}"{% endif %}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-clock" viewBox="0 0 16 16">
+                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"></path>
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"></path>
+                      </svg>
+                    </a>
+                  </div>
+                <div>
+                  <a role="button" title="Просмотренное" {% if film.watched is True or watched is True %} class="btn btn-primary btn-circle" href="{% url 'films:delete_watched_film' film.film_id %}"
+                                                        {% else %} class="btn btn-outline-primary btn-circle" data-bs-toggle="modal" data-bs-target="#addrating{{film.film_id}}" {% endif %}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-film" viewBox="0 0 16 16">
+                      <path d="M0 1a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V1zm4 0v6h8V1H4zm8 8H4v6h8V9zM1 1v2h2V1H1zm2 3H1v2h2V4zM1 7v2h2V7H1zm2 3H1v2h2v-2zm-2 3v2h2v-2H1zM15 1h-2v2h2V1zm-2 3v2h2V4h-2zm2 3h-2v2h2V7zm-2 3v2h2v-2h-2zm2 3h-2v2h2v-2z"></path>
+                    </svg>
+                  </a>
+                </div>
+                </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="container">
+          <div>
+          {% if film.description is not None %}
+            <p class="card-text" style="text-align: justify;">Описание: {{ film.description }}</p>
+          {% endif %}
+          </div>
+          <hr style="width:100%; margin: 10px auto;" />
+          <div>
+            <h4>О фильме:</h4>
+          </div>
+          <div  style="margin-top: 3%">
+            {% if film.year is not None %}
+              <p class="card-text">Год: {{ film.year }}</p>
+            {% else %}
+              <p class="card-text">Год: -</p>
+            {% endif %}
+            {% if film.film_length is not None%}
+              <p class="card-text">Длительность фильма: {{ film.film_length }}</p>
+            {% else %}
+              <p class="card-text">Длительность фильма: -</p>
+            {% endif %}
+            {% if film.rating is not None%}
+              <p class="card-text">Рейтинг фильма: {{ film.rating }}</p>
+            {% else %}
+              <p class="card-text">Рейтинг фильма: -</p>
+            {% endif %}
+        
         {% if request.resolver_match.view_name == 'films:search' %}
           <a
             class="btn btn-outline-warning"
@@ -29,63 +84,42 @@
           >
             Страница фильма
           </a>
+        </div>
         {% else %}
-          {% if film.favorite is True or favorite is True %}
-            <a
-              class="btn btn-outline-warning"
-              href="{% url 'films:delete_favorite' film.film_id %}"
-              role="button"
-            >
-              В избранном
-            </a>
-          {% else %}
-            <a
-              class="btn btn-warning"
-              href="{% url 'films:add_favorite' film.film_id %}"
-              role="button"
-            >
-              В избранное
-            </a>
-          {% endif %}
-          {% if film.deferred is True or deferred is True %}
-            <a
-              class="btn btn-outline-secondary"
-              href="{% url 'films:delete_deferred' film.film_id %}"
-              role="button"
-            >
-              В смотреть позже
-            </a>
-          {% else %}
-            <a
-              class="btn btn-secondary"
-              href="{% url 'films:add_deferred' film.film_id %}"
-              role="button"
-            >
-              Смотреть позже
-            </a>
-          {% endif %}
+        <div class='row'>
           {% if film.watched is True or watched is True %}
-              <a
-                class="btn btn-outline-success"
-                href="{% url 'films:delete_watched_film' film.film_id %}"
-                role="button"
-              >
-                В просмотренном
-              </a>
-              <div class="rating-result">
-                  <p>Ваш рейтинг фильма</p>
+              <p>Ваш рейтинг фильма:
                 {% for _ in film.user_rating %}
-                  <span class="active"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="#FFD700" class="bi bi-star-fill" viewBox="0 0 16 16">
+                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"></path>
+                </svg>
                 {% endfor %}
-              </div>
-          {% else %}
-            <form
+              </p>
+          {% endif %}
+        </div>
+    </div>
+        {% endif%}
+  </div>
+</div>
+</div>
+</div>
+</div>
+
+
+<div class="modal fade" id="addrating{{film.film_id}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Добавление фильма в просмотренные</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+      </div>
+      <div class="modal-body">
+        <form
               method="post"
               action="{% url 'films:watched_film' film.film_id %}"
             >
               {% csrf_token %}
-              <hr style="width:100%; margin: 10px auto;" />
-              <p>Смотрели? Добавьте в просмотренное и выставите свой рейтинг!</p>
+              <p>Добавьте в просмотренное и выставите свой рейтинг!</p>
               <div class="rating">
                 <input type="radio" name="rating" id="rating-5" , value="5" />
                 <label for="rating-5"></label>
@@ -397,17 +431,13 @@
                   </div>
                 </div>
               </div>
-              <button
-                type="submit"
-                class="btn btn-success"
-                style="width: 100%; margin: 10px auto;"
-              >
-                Добавить
-              </button>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                <button type="submit" class="btn btn-success">Сохранить изменения</button>
+              </div>
             </form>
-          {% endif %}
-        {% endif%}
       </div>
+      
     </div>
   </div>
 </div>

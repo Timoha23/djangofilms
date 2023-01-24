@@ -18,5 +18,6 @@ urlpatterns = [
     path('add_film_to_deferred/<int:film_id>/', views.add_film_to_deferred, name='add_deferred'),
     path('del_film_from_deferred/<int:film_id>/', views.delete_film_from_deferred, name='delete_deferred'),
     path('recommendation/', views.get_recommended_films, name='get_recommended'),
+    path('error/', views.error_api_page, name='error_api'),
     path('', views.index, name='index'),
 ]
