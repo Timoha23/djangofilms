@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from api.kinopoisk.api_kinopisk import get_films, get_film_from_id, recommended_films
+from django.db.models import Prefetch
+
+from external_api.kinopoisk.api_kinopisk import get_films, get_film_from_id, recommended_films
 from .models import Film, WatchedFilm, Favorite, Deferred, User
 import inspect
 
@@ -66,10 +68,10 @@ def get_films_data(request, films):
             'watched': watched,
             'deferred': deferred,
         }
-        user_rating = film.watched_film.filter(film=film)
-        if user_rating.exists():
-            user_rating = user_rating[0]
-            film_dct.update({'user_rating': range(user_rating.rating)})
+        try:
+            film_dct.update({'user_rating': range(film.watched_prefetch[0].rating)})
+        except IndexError:
+            pass
         films_list.append(film_dct)
     context = dict()
     context.update(paginator(films_list, request))
@@ -102,7 +104,11 @@ def index(request):
 def watched_films(request):
     films = (Film.objects.
              filter(watched_film__user=request.user).
-             prefetch_related('watched_film').
+             prefetch_related(Prefetch(
+                "watched_film",
+                queryset=WatchedFilm.objects.filter(user=request.user),
+                to_attr="watched_prefetch"
+             )).
              order_by('-watched_film__pub_date'))
     context = get_films_data(request, films)
     return render(request, template_name='films/films_watched.html',
@@ -113,6 +119,11 @@ def watched_films(request):
 def favorite_films(request):
     films = (Film.objects.
              filter(favorite__user=request.user).
+             prefetch_related(Prefetch(
+                "watched_film",
+                queryset=WatchedFilm.objects.filter(user=request.user),
+                to_attr="watched_prefetch"
+             )).
              order_by('-favorite__pub_date'))
     context = get_films_data(request, films)
     return render(request, template_name='films/films_favorites.html',
@@ -123,6 +134,11 @@ def favorite_films(request):
 def deferred_films(request):
     films = (Film.objects.
              filter(deferred__user=request.user).
+             prefetch_related(Prefetch(
+                "watched_film",
+                queryset=WatchedFilm.objects.filter(user=request.user),
+                to_attr="watched_prefetch"
+             )).
              order_by('-deferred__pub_date'))
     context = get_films_data(request, films)
     return render(request, template_name='films/deferred_films.html',

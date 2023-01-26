@@ -3,13 +3,18 @@ from kinopoisk_unofficial.request.films.film_request import FilmRequest
 from kinopoisk_unofficial.request.films.search_by_keyword_request import SearchByKeywordRequest
 from kinopoisk_unofficial.request.films.related_film_request import RelatedFilmRequest
 import random
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 def get_films(film_name: str) -> list[dict]:
     """Получает название фильма на основе чего генерирует список из
     словарей, в которых хранится информация касательно фильмов"""
 
-    api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
+    api_client = KinopoiskApiClient(os.getenv('KINOPOISK_API_TOKEN'))
     request = SearchByKeywordRequest(film_name)
     response = api_client.films.send_search_by_keyword_request(request)
     films = response.films
@@ -33,7 +38,7 @@ def get_films(film_name: str) -> list[dict]:
 
 def get_film_from_id(film_id: int) -> dict:
     """Получает фильм ID на основе чего генерирует информацию об этом фильме"""
-    api_client = KinopoiskApiClient("9d4b2df7-f721-490e-95e5-861f111129a0")
+    api_client = KinopoiskApiClient(os.getenv('KINOPOISK_API_TOKEN'))
     request = FilmRequest(film_id)
     response = api_client.films.send_film_frame_request(request)
     result = response.film

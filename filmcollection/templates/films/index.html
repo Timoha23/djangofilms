@@ -2,32 +2,22 @@
 {% load static %}
 {% block title %} Главная страница {% endblock title %}
 {% block content %}
-    <div class="col align-self-center" style="margin-top: 5%">
-        <div style="margin-bottom:5%;"><h2 class="text-center"> Ваши любимые фильмы и сериалы здесь</h2></div>
-        <figure class="icon-cards mt-3">
-            <div class="icon-cards__content">
-                <div class="icon-cards__item d-flex align-items-center justify-content-center"><img src="{% static 'images/poster_3.jpg '%}" class="card-img" alt="..." /></div>
-                <div class="icon-cards__item d-flex align-items-center justify-content-center"><img src="{% static 'images/poster_2.jpg '%}" class="card-img" alt="..." /></div>
-                <div class="icon-cards__item d-flex align-items-center justify-content-center"><img src="{% static 'images/poster_1.jpg '%}" class="card-img" alt="..." /></div>
+  <div class="container">
+    <div class="row">
+      <h2 class="text-center" style="margin-bottom: 5%; margin-top:5%;">Ваши любимые фильмы и сериалы здесь</h2>
+    </div>
+    <div class="row mx-auto" style="width: 25%">
+      <img src="{% static 'images/walter.png '%}" class="card-img" alt="..."></omg>
+    </div>
+    <div class="row ">
+        <div class="d-flex justify-content-center">
+          <form action="{% url 'films:search' %}" class="form-inline" method="get">
+            <div class="search">
+                <input type="text" class="search-input" placeholder="Поиск..." name="res">
+                <button type="submit" class="search-icon"><i class="fa fa-search"></i></button>
             </div>
-            </figure>    
+          </fomr>
+        </div>
     </div>
-
-    <div class="col align-self-center" style='margin-top:10%; margin-bottom:18%'>
-            <form action="{% url 'films:search' %}" class="form-inline" method="get" style="width: 60%; margin-left:auto; margin-right:auto">
-                <div class="form-group mx-sm-3 mb-2">
-                    <input name="res"
-                            type=""
-                            class="form-control"
-                            id=""
-                            placeholder="Поиск...">
-                </div>
-            </form>
-    </div>
-    <div class="d1">
-        <form>
-        <input type="text" placeholder="Искать здесь...">
-        <button type="submit"></button>
-        </form>
-    </div>
+  </div>
 {% endblock content %}
